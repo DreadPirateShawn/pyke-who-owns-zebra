@@ -1,0 +1,210 @@
+#############
+# Categories
+
+# Foreach set of categories, assert each type
+categories
+    foreach
+        clues.categories($category, $thing1, $thing2, $thing3, $thing4, $thing5)
+    assert
+        clues.is_category($category, $thing1)
+        clues.is_category($category, $thing2)
+        clues.is_category($category, $thing3)
+        clues.is_category($category, $thing4)
+        clues.is_category($category, $thing5)
+
+
+#########################
+# Inverse Reslationships
+
+# Foreach A=1, assert 1=A
+inverse_relationship_positive
+    foreach
+        clues.related($category1, $thing1, $category2, $thing2)
+    assert
+        clues.related($category2, $thing2, $category1, $thing1)
+
+# Foreach A!1, assert 1!A
+inverse_relationship_negative
+    foreach
+        clues.not_related($category1, $thing1, $category2, $thing2)
+    assert
+        clues.not_related($category2, $thing2, $category1, $thing1)
+
+# Foreach "A beside B", assert "B beside A"
+inverse_relationship_beside
+    foreach
+        clues.next_to($category1, $thing1, $category2, $thing2)
+    assert
+        clues.next_to($category2, $thing2, $category1, $thing1)
+
+
+###########################
+# Transitive Relationships
+
+# Foreach A=1 and 1=a, assert A=a
+transitive_positive
+    foreach
+        clues.related($category1, $thing1, $category2, $thing2)
+        clues.related($category2, $thing2, $category3, $thing3)
+
+        check unique($thing1, $thing2, $thing3) \
+          and unique($category1, $category2, $category3)
+    assert
+        clues.related($category1, $thing1, $category3, $thing3)
+
+# Foreach A=1 and 1!a, assert A!a
+transitive_negative
+    foreach
+        clues.related($category1, $thing1, $category2, $thing2)
+        clues.not_related($category2, $thing2, $category3, $thing3)
+
+        check unique($thing1, $thing2, $thing3) \
+          and unique($category1, $category2, $category3)
+    assert
+        clues.not_related($category1, $thing1, $category3, $thing3)
+
+
+##########################
+# Exclusive Relationships
+
+# Foreach A=1, assert A!2 and A!3 and A!4 and A!5
+if_one_related_then_others_unrelated
+    foreach
+        clues.related($category, $thing, $category_other, $thing_other)
+        check unique($category, $category_other)
+
+        clues.is_category($category_other, $thing_not_other)
+        check unique($thing, $thing_other, $thing_not_other)
+    assert
+        clues.not_related($category, $thing, $category_other, $thing_not_other)
+
+# Foreach A!1 and A!2 and A!3 and A!4, assert A=5
+if_four_unrelated_then_other_is_related
+    foreach
+        clues.not_related($category, $thing, $category_other, $thingA)
+        clues.not_related($category, $thing, $category_other, $thingB)
+        check unique($thingA, $thingB)
+
+        clues.not_related($category, $thing, $category_other, $thingC)
+        check unique($thingA, $thingB, $thingC)
+
+        clues.not_related($category, $thing, $category_other, $thingD)
+        check unique($thingA, $thingB, $thingC, $thingD)
+
+        # Find the fifth variation of category_other.
+        clues.is_category($category_other, $thingE)
+        check unique($thingA, $thingB, $thingC, $thingD, $thingE)
+    assert
+        clues.related($category, $thing, $category_other, $thingE)
+
+
+###################
+# Neighbors: Basic
+
+# Foreach "A left of 1", assert "A beside 1"
+expanded_relationship_beside_left
+    foreach
+        clues.left_of($category1, $thing1, $category2, $thing2)
+    assert
+        clues.next_to($category1, $thing1, $category2, $thing2)
+
+# Foreach "A beside 1", assert A!1
+unrelated_to_beside
+    foreach
+        clues.next_to($category1, $thing1, $category2, $thing2)
+        check unique($category1, $category2)
+    assert
+        clues.not_related($category1, $thing1, $category2, $thing2)
+
+
+###################################
+# Neighbors: Spatial Relationships
+
+# Foreach "A beside B" and "A=(at-edge)", assert "B=(near-edge)"
+check_next_to_either_edge
+    foreach
+        clues.related(POSITION, $position_known, $category, $thing)
+        check is_edge($position_known)
+
+        clues.next_to($category, $thing, $category_other, $thing_other)
+
+        clues.is_category(POSITION, $position_other)
+        check is_beside($position_known, $position_other)
+    assert
+        clues.related(POSITION, $position_other, $category_other, $thing_other)
+
+# Foreach "A beside B" and "A!(near-edge)" and "B!(near-edge)", assert "A!(at-edge)"
+check_too_close_to_edge
+    foreach
+        clues.next_to($category, $thing, $category_other, $thing_other)
+
+        clues.is_category(POSITION, $position_edge)
+        clues.is_category(POSITION, $position_near_edge)
+        check is_edge($position_edge) and is_beside($position_edge, $position_near_edge)
+
+        clues.not_related(POSITION, $position_near_edge, $category, $thing)
+        clues.not_related(POSITION, $position_near_edge, $category_other, $thing_other)
+    assert
+        clues.not_related(POSITION, $position_edge, $category, $thing)
+
+# Foreach "A beside B" and "A!(one-side)", assert "A=(other-side)"
+check_next_to_with_other_side_impossible
+    foreach
+        clues.next_to($category, $thing, $category_other, $thing_other)
+
+        clues.related(POSITION, $position_known, $category_other, $thing_other)
+        check not is_edge($position_known)
+
+        clues.not_related($category, $thing, POSITION, $position_one_side)
+        check is_beside($position_known, $position_one_side)
+
+        clues.is_category(POSITION, $position_other_side)
+        check is_beside($position_known, $position_other_side) \
+          and unique($position_known, $position_one_side, $position_other_side)
+    assert
+        clues.related($category, $thing, POSITION, $position_other_side)
+
+# Foreach "A left of B"...
+#   ... and "C=(position1)" and "D=(position2)" and "E=(position3)"
+# ~> assert "A=(other-position)" and "B=(other-position)+1"
+left_of_and_only_two_slots_remaining
+    foreach
+        clues.left_of($category_left, $thing_left, $category_right, $thing_right)
+
+        clues.related($category_left, $thing_left_other1, POSITION, $position1)
+        clues.related($category_left, $thing_left_other2, POSITION, $position2)
+        clues.related($category_left, $thing_left_other3, POSITION, $position3)
+        check unique($thing_left, $thing_left_other1, $thing_left_other2, $thing_left_other3)
+
+        clues.related($category_right, $thing_right_other1, POSITION, $position1)
+        clues.related($category_right, $thing_right_other2, POSITION, $position2)
+        clues.related($category_right, $thing_right_other3, POSITION, $position3)
+        check unique($thing_right, $thing_right_other1, $thing_right_other2, $thing_right_other3)
+
+        clues.is_category(POSITION, $position4)
+        clues.is_category(POSITION, $position5)
+
+        check is_left_right($position4, $position5) \
+          and unique($position1, $position2, $position3, $position4, $position5)
+    assert
+        clues.related(POSITION, $position4, $category_left, $thing_left)
+        clues.related(POSITION, $position5, $category_right, $thing_right)
+
+
+#########################
+
+fc_extras
+
+    def unique(*args):
+        return len(args) == len(set(args))
+
+    def is_edge(pos):
+        return (pos == 1) or (pos == 5)
+
+    def is_beside(pos1, pos2):
+        diff = (pos1 - pos2)
+        return (diff == 1) or (diff == -1)
+
+    def is_left_right(pos_left, pos_right):
+        return (pos_right - pos_left == 1)
+

@@ -1,0 +1,23 @@
+categories( POSITION, 1, 2, 3, 4, 5 )                                   # There are five houses.
+categories( HOUSE_COLOR, blue, red, green, white, yellow )              # Each house has its own unique color.
+categories( NATIONALITY, Norwegian, German, Dane, Swede, English )      # All house owners are of different nationalities.
+categories( PET, birds, dog, cats, horse, zebra )                       # They all have different pets.
+categories( DRINK, tea, coffee, milk, beer, water )                     # They all drink different drinks.
+categories( SMOKE, Blend, Prince, 'Blue Master', Dunhill, 'Pall Mall' ) # They all smoke different cigarettes.
+
+related( NATIONALITY, English, HOUSE_COLOR, red )    # The English man lives in the red house.
+related( NATIONALITY, Swede, PET, dog )              # The Swede has a dog.
+related( NATIONALITY, Dane, DRINK, tea )             # The Dane drinks tea.
+left_of( HOUSE_COLOR, green, HOUSE_COLOR, white )    # The green house is on the left side of the white house.
+related( DRINK, coffee, HOUSE_COLOR, green )         # They drink coffee in the green house.
+related( SMOKE, 'Pall Mall', PET, birds )            # The man who smokes Pall Mall has birds.
+related( SMOKE, Dunhill, HOUSE_COLOR, yellow )       # In the yellow house they smoke Dunhill.
+related( POSITION, 3, DRINK, milk )                  # In the middle house they drink milk.
+related( NATIONALITY, Norwegian, POSITION, 1 )       # The Norwegian lives in the first house.
+next_to( SMOKE, Blend, PET, cats )                   # The man who smokes Blend lives in the house next to the house with cats.
+next_to( SMOKE, Dunhill, PET, horse )                # In the house next to the house where they have a horse, they smoke Dunhill.
+related( SMOKE, 'Blue Master', DRINK, beer )         # The man who smokes Blue Master drinks beer.
+related( NATIONALITY, German, SMOKE, Prince )        # The German smokes Prince.
+next_to( NATIONALITY, Norwegian, HOUSE_COLOR, blue ) # The Norwegian lives next to the blue house.
+next_to( DRINK, water, SMOKE, Blend )                # They drink water in the house next to the house where they smoke Blend.
+
