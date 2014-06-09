@@ -14,7 +14,7 @@ categories
 
 
 #########################
-# Inverse Reslationships
+# Inverse Relationships
 
 # Foreach A=1, assert 1=A
 inverse_relationship_positive
