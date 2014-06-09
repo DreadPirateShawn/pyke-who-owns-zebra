@@ -16,8 +16,9 @@ Requirements
 * python-pyke is the knowledge engine
 * python-texttable is used for easy debugging visualization
 
-
-    apt-get install python python-pyke python-texttable
+```
+apt-get install python python-pyke python-texttable
+```
 
 
 Contains
